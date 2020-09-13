@@ -24,24 +24,45 @@ namespace TravelRecordApp
             var position = await locator.GetPositionAsync();
 
             var venues = await VenueLogic.GetVenues(position.Latitude, position.Longitude);
+
+            venueListView.ItemsSource = venues;
         }
 
         private void ToolbarItem_Clicked(object sender, EventArgs e)
         {
-            Post post = new Post
+            try
             {
-                Experience = experienceEntry.Text
-            };
+                var selectedVenue = venueListView.SelectedItem as Venue;
 
-            using (SQLiteConnection conn = new SQLiteConnection(App.DatabaseLocation))
-            {
-                conn.CreateTable<Post>();
-                int rows = conn.Insert(post);
-
-                if (rows > 0)
+                Post post = new Post
                 {
-                    DisplayAlert("Success", "The experience was added to the database", "Okay");
+                    Experience = experienceEntry.Text,
+                    VenueName = selectedVenue.name,
+                    Address = selectedVenue.location.address,
+                    Distance = selectedVenue.location.distance,
+                    Latitude = selectedVenue.location.lat,
+                    Longitude = selectedVenue.location.lng
+                };
+
+                using (SQLiteConnection conn = new SQLiteConnection(App.DatabaseLocation))
+                {
+                    conn.CreateTable<Post>();
+                    int rows = conn.Insert(post);
+
+                    if (rows > 0)
+                    {
+                        DisplayAlert("Success", "The experience was added to the database", "Okay");
+                    }
                 }
+            }
+            catch (NullReferenceException nre)
+            {
+
+            }
+            catch (Exception ex)
+            {
+
+                throw;
             }
 
         }
